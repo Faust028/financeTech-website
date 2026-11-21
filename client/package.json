@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "vercel-build": "node -e \"console.error('\\n[FinanceTech] Root Directory incorreto na Vercel: o projeto esta usando a pasta client.\\nEm Settings > Build and Deployment, deixe Root Directory em branco (raiz do repositorio),\\nFramework Preset = Other e desative os overrides de Build/Output/Install. O vercel.json da raiz configura tudo.\\n');process.exit(1)\""
   },
   "dependencies": {
     "jspdf": "^2.5.2",
