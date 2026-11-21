@@ -1,14 +1,21 @@
-// FinanceTech — modelo de dados
-// Ambiente local usa SQLite. Para PostgreSQL basta trocar o provider para "postgresql"
-// e ajustar DATABASE_URL no .env (os modelos são compatíveis).
+// FinanceTech — modelo de dados (fonte única)
+//
+// Produção (Vercel): PostgreSQL. DATABASE_URL = conexão (com pool) usada pela API;
+// DIRECT_URL = conexão direta usada pelas migrações (se ausente, usa DATABASE_URL).
+//
+// Desenvolvimento local sem PostgreSQL: quando DATABASE_URL começa com "file:",
+// o script scripts/prisma.mjs gera automaticamente uma cópia SQLite deste arquivo
+// (schema.sqlite.prisma, ignorada pelo git). Edite apenas ESTE arquivo.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Settings {

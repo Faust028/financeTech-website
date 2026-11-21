@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { addDays, addMonths, monthEnd, monthStart, pad, toDate, todayStr } from '../lib/dates.js';
 import { DEFAULT_EXPENSE_CATEGORIES, DEFAULT_PRODUCT_CATEGORIES, DEFAULT_REVENUE_CATEGORIES } from './settings.js';
@@ -117,8 +118,8 @@ export async function seedDemo() {
   const [torrefacao, laticinios, embalagens, doceSabor, imobiliaria, baristaPro] = suppliers;
 
   /* ------------------------- Receitas e despesas ------------------------- */
-  const revenues: Parameters<typeof prisma.revenue.create>[0]['data'][] = [];
-  const expenses: Parameters<typeof prisma.expense.create>[0]['data'][] = [];
+  const revenues: Prisma.RevenueCreateManyInput[] = [];
+  const expenses: Prisma.ExpenseCreateManyInput[] = [];
 
   for (let m = 0; m < 6; m++) {
     const month = addMonths(firstMonth, m);
@@ -249,8 +250,9 @@ export async function seedDemo() {
     notes: '50% na entrega. Pedido confirmado por e-mail.',
   });
 
-  for (const r of revenues) await prisma.revenue.create({ data: r });
-  for (const e of expenses) await prisma.expense.create({ data: e });
+  // inserção em lote: poucas idas ao banco (importante em produção/serverless)
+  await prisma.revenue.createMany({ data: revenues });
+  await prisma.expense.createMany({ data: expenses });
 
   /* ------------------------------ Produtos ------------------------------ */
   const productData = [
@@ -298,6 +300,6 @@ export async function seedDemo() {
       ...(p.restock ? [{ type: 'ENTRADA', quantity: p.restock, unitValue: p.cost, balanceAfter: q3, date: d2, notes: 'Reposição de mercadoria' }] : []),
       { type: 'SAIDA', quantity: p.sold2, unitValue: p.sale, balanceAfter: q4, date: d3, notes: 'Vendas do período' },
     ];
-    for (const mv of moves) await prisma.stockMovement.create({ data: { ...mv, date: D(mv.date), productId: product.id } });
+    await prisma.stockMovement.createMany({ data: moves.map((mv) => ({ ...mv, date: D(mv.date), productId: product.id })) });
   }
 }

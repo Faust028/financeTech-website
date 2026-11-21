@@ -4,9 +4,22 @@
  */
 export const pad = (n: number) => String(n).padStart(2, '0');
 
+/**
+ * Data de hoje no fuso do negócio (padrão: America/Sao_Paulo).
+ * Servidores na nuvem (ex.: Vercel) rodam em UTC; sem isso, entre 21h e 0h
+ * o sistema consideraria o dia seguinte para vencimentos e atrasos.
+ */
+const APP_TZ = process.env.APP_TIMEZONE || 'America/Sao_Paulo';
+const dayFormatter = (() => {
+  try {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: APP_TZ, year: 'numeric', month: '2-digit', day: '2-digit' });
+  } catch {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' });
+  }
+})();
+
 export function todayStr(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  return dayFormatter.format(new Date()); // en-CA => YYYY-MM-DD
 }
 
 export const toDate = (s: string) => new Date(`${s}T00:00:00.000Z`);

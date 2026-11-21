@@ -2,6 +2,7 @@
   "name": "financetech",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "FinanceTech — gestão financeira e administrativa para pequenos empreendedores",
   "workspaces": [
     "server",
@@ -10,10 +11,11 @@
   "scripts": {
     "setup": "npm install && npm run db:setup -w server",
     "dev": "concurrently -n api,web -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
-    "build": "npm run build -w server && npm run build -w client",
+    "build": "npm run typecheck -w server && npm run build -w client",
     "start": "npm run start -w server",
     "seed": "npm run seed -w server",
-    "typecheck": "npm run typecheck -w server && npm run typecheck -w client"
+    "typecheck": "npm run typecheck -w server && npm run typecheck -w client",
+    "vercel-build": "npm run db:migrate:deploy -w server && npm run prisma:generate -w server && npm run build -w client"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
@@ -24,5 +26,8 @@
     "@prisma/engines@6.19.3": true,
     "esbuild@0.28.2": true,
     "esbuild@0.25.12": true
+  },
+  "engines": {
+    "node": "22.x"
   }
 }

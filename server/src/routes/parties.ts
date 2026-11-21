@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { prisma } from '../lib/prisma.js';
+import { containsText, prisma } from '../lib/prisma.js';
 import { ah, notFound } from '../lib/errors.js';
 import { partySchema } from '../lib/validation.js';
 
@@ -15,8 +15,8 @@ function searchWhere(search?: string) {
   const digits = s.replace(/\D/g, '');
   return {
     OR: [
-      { name: { contains: s } },
-      { email: { contains: s.toLowerCase() } },
+      { name: containsText(s) },
+      { email: containsText(s.toLowerCase()) },
       ...(digits.length >= 3 ? [{ document: { contains: digits } }, { phone: { contains: digits } }] : []),
     ],
   };

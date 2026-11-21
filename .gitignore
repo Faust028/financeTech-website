@@ -3,3 +3,7 @@ dist
 *.db
 *.db-journal
 .env
+.env.*
+!.env.example
+.vercel
+server/prisma/schema.sqlite.prisma

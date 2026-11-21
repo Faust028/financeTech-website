@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import type { Prisma } from '@prisma/client';
-import { prisma } from '../lib/prisma.js';
+import { containsText, prisma } from '../lib/prisma.js';
 import { AppError, ah } from '../lib/errors.js';
 import { isDateStr, toDate, todayStr } from '../lib/dates.js';
 import { expenseSchema, revenueSchema } from '../lib/validation.js';
@@ -23,7 +23,7 @@ revenuesRouter.get(
   ah(async (req, res) => {
     const { search, from, to, category, status, clientId } = req.query as Record<string, string | undefined>;
     const where: Prisma.RevenueWhereInput = {};
-    if (search?.trim()) where.description = { contains: search.trim() };
+    if (search?.trim()) where.description = containsText(search.trim());
     if (category) where.category = category;
     if (status === 'RECEBIDO' || status === 'PENDENTE') where.status = status;
     if (clientId) where.clientId = Number(clientId);
@@ -89,7 +89,7 @@ expensesRouter.get(
     const settings = await getSettings();
     const where: Prisma.ExpenseWhereInput = {};
     const today = toDate(todayStr());
-    if (search?.trim()) where.description = { contains: search.trim() };
+    if (search?.trim()) where.description = containsText(search.trim());
     if (category) where.category = category;
     if (supplierId) where.supplierId = Number(supplierId);
     const dueFilter: Prisma.DateTimeFilter = {};

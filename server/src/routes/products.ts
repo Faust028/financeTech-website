@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import type { Prisma } from '@prisma/client';
-import { prisma } from '../lib/prisma.js';
+import { containsText, prisma } from '../lib/prisma.js';
 import { AppError, ah, notFound } from '../lib/errors.js';
 import { toDate, todayStr } from '../lib/dates.js';
 import { movementSchema, productSchema } from '../lib/validation.js';
@@ -17,7 +17,7 @@ productsRouter.get(
   ah(async (req, res) => {
     const { search, category, filter, supplierId } = req.query as Record<string, string | undefined>;
     const where: Prisma.ProductWhereInput = {};
-    if (search?.trim()) where.OR = [{ name: { contains: search.trim() } }, { sku: { contains: search.trim().toUpperCase() } }];
+    if (search?.trim()) where.OR = [{ name: containsText(search.trim()) }, { sku: containsText(search.trim()) }];
     if (category) where.category = category;
     if (supplierId) where.supplierId = Number(supplierId);
     let list = (await prisma.product.findMany({ where, include, orderBy: { name: 'asc' } })).map(serializeProduct);
