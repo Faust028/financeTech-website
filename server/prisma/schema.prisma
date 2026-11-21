@@ -1,0 +1,130 @@
+// FinanceTech — modelo de dados
+// Ambiente local usa SQLite. Para PostgreSQL basta trocar o provider para "postgresql"
+// e ajustar DATABASE_URL no .env (os modelos são compatíveis).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Settings {
+  id                Int      @id @default(1)
+  companyName       String
+  document          String?
+  email             String?
+  phone             String?
+  openingBalance    Float    @default(0)
+  openingDate       DateTime
+  dueSoonDays       Int      @default(7)
+  revenueCategories String // JSON array de strings
+  expenseCategories String // JSON array de strings
+  productCategories String // JSON array de strings
+  isDemo            Boolean  @default(false)
+  updatedAt         DateTime @updatedAt
+}
+
+model Client {
+  id        Int       @id @default(autoincrement())
+  name      String
+  document  String?
+  phone     String?
+  email     String?
+  address   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  revenues  Revenue[]
+}
+
+model Supplier {
+  id        Int       @id @default(autoincrement())
+  name      String
+  document  String?
+  phone     String?
+  email     String?
+  address   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  expenses  Expense[]
+  products  Product[]
+}
+
+model Revenue {
+  id            Int            @id @default(autoincrement())
+  description   String
+  amount        Float
+  category      String
+  date          DateTime // data de recebimento (ou prevista, se pendente)
+  clientId      Int?
+  client        Client?        @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  paymentMethod String
+  status        String // RECEBIDO | PENDENTE
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  stockMovement StockMovement?
+
+  @@index([date])
+  @@index([status])
+}
+
+model Expense {
+  id            Int            @id @default(autoincrement())
+  description   String
+  amount        Float
+  category      String
+  dueDate       DateTime
+  paymentDate   DateTime?
+  supplierId    Int?
+  supplier      Supplier?      @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  paymentMethod String
+  status        String // PAGO | PENDENTE  (ATRASADO é derivado: pendente com vencimento passado)
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  stockMovement StockMovement?
+
+  @@index([dueDate])
+  @@index([paymentDate])
+  @@index([status])
+}
+
+model Product {
+  id          Int             @id @default(autoincrement())
+  name        String
+  sku         String          @unique
+  category    String
+  description String?
+  quantity    Int             @default(0)
+  minStock    Int             @default(0)
+  costPrice   Float
+  salePrice   Float
+  supplierId  Int?
+  supplier    Supplier?       @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  movements   StockMovement[]
+}
+
+model StockMovement {
+  id           Int      @id @default(autoincrement())
+  productId    Int
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type         String // ENTRADA | SAIDA
+  quantity     Int
+  unitValue    Float?
+  balanceAfter Int
+  date         DateTime
+  notes        String?
+  revenueId    Int?     @unique
+  revenue      Revenue? @relation(fields: [revenueId], references: [id], onDelete: SetNull)
+  expenseId    Int?     @unique
+  expense      Expense? @relation(fields: [expenseId], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+
+  @@index([productId])
+  @@index([date])
+}
