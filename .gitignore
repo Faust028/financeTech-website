@@ -7,3 +7,4 @@ dist
 !.env.example
 .vercel
 server/prisma/schema.sqlite.prisma
+server/public

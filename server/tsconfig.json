@@ -9,5 +9,9 @@
     "resolveJsonModule": true,
     "outDir": "dist"
   },
-  "include": ["src", "prisma"]
+  "include": [
+    "src",
+    "prisma",
+    "api"
+  ]
 }

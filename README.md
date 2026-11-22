@@ -28,7 +28,7 @@ Outros comandos:
 | `npm run build` | Gera o build de produção do front-end |
 | `npm start` | Sobe a API servindo também o front-end compilado em http://localhost:3333 |
 | `npm run preview -w client` | Serve o build de produção em http://localhost:4173 (com a API local) |
-| `npm run vercel-build` | Build usado pela Vercel (migrações + Prisma Client + front-end) |
+| `npm run build:vercel` | Build usado pela Vercel (migrações + Prisma Client + front-end) |
 
 Pelo sistema, em **Configurações**, também é possível apagar todos os dados (para começar com os dados reais) ou restaurar a demonstração.
 
@@ -81,12 +81,20 @@ Frontend e backend ficam em **um único projeto Vercel** (sem o recurso de Multi
 
 | Campo | Valor |
 | --- | --- |
-| Root Directory | `./` (raiz do repositório) |
+| Root Directory | `./` (recomendado). `server` ou `client` também funcionam |
 | Framework Preset | Other |
-| Install Command | `npm install` (já definido no `vercel.json`) |
-| Build Command | `npm run vercel-build` (já definido no `vercel.json`) |
-| Output Directory | `client/dist` (já definido no `vercel.json`) |
+| Install / Build / Output | **Deixe sem override** — cada `vercel.json` já define |
 | Node.js Version | 22.x |
+
+O projeto funciona com qualquer uma das três opções de Root Directory, pois cada pasta tem seu próprio `vercel.json` e `api/index.ts` apontando para o mesmo app Express e o mesmo build:
+
+| Root Directory | Install | Build | Output | Função da API |
+| --- | --- | --- | --- | --- |
+| `./` | `npm install` | `npm run build:vercel` | `client/dist` | `api/index.ts` |
+| `server` | `cd .. && npm install` | `npm run build:vercel` | `public` (cópia de `client/dist`) | `server/api/index.ts` |
+| `client` | `cd .. && npm install` | `npm run build:vercel` | `dist` | `client/api/index.ts` |
+
+Se você preencheu Build Command ou Output Directory manualmente no painel, apague esses valores: o `vercel.json` tem prioridade, mas manter o painel limpo evita confusão.
 
 ### Variáveis de ambiente (Settings → Environment Variables)
 
@@ -102,7 +110,7 @@ Marque as variáveis para **Production** e **Preview** (o build precisa delas pa
 
 1. Crie um banco PostgreSQL (ex.: Neon — gratuito; ou em Vercel → Storage → Marketplace → Neon/Supabase, que já cadastra as variáveis).
 2. Envie o repositório para o GitHub.
-3. Na Vercel: **Add New → Project** → importe o repositório. Mantenha o Root Directory na raiz; se aparecer a sugestão de múltiplos serviços, ignore-a — o `vercel.json` já define tudo.
+3. Na Vercel: **Add New → Project** → importe o repositório. Prefira o Root Directory na raiz (`./`); se a Vercel sugerir `server` ou `client` ou múltiplos serviços, tudo bem usar `server` ou `client` — mas não ative o modo de múltiplos serviços.
 4. Cadastre `DATABASE_URL` (e `DIRECT_URL`) em Environment Variables.
 5. Clique em **Deploy**. O build aplica as migrações, gera o Prisma Client e compila o front-end.
 6. Teste `https://SEU-PROJETO.vercel.app/api/health/db` → deve responder `{"ok":true,"database":"conectado"}`.

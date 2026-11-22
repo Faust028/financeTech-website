@@ -14,7 +14,8 @@
     "db:push": "node scripts/prisma.mjs db push",
     "db:migrate:deploy": "node scripts/prisma.mjs migrate deploy",
     "seed": "tsx prisma/seed.ts",
-    "postinstall": "node scripts/prisma.mjs generate"
+    "postinstall": "node scripts/prisma.mjs generate",
+    "build:vercel": "cd .. && npm run build:vercel && node scripts/copy-dist.mjs server/public"
   },
   "dependencies": {
     "@prisma/client": "^6.1.0",
